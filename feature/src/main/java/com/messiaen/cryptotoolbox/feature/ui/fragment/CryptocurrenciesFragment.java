@@ -16,6 +16,7 @@ import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.CryptocurrencyHold
 import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.OnCryptocurrenciesDataEventListener;
 import com.messiaen.cryptotoolbox.feature.listeners.OnRequestCryptocurrencyUpdateListener;
 import com.messiaen.cryptotoolbox.feature.ui.adapter.CryptocurrenciesRecyclerViewAdapter;
+import com.messiaen.cryptotoolbox.feature.utils.Keyboard;
 
 import java.util.List;
 
@@ -37,8 +38,8 @@ public class CryptocurrenciesFragment extends Fragment implements OnCryptocurren
 
     private OnListFragmentInteractionListener mListener;
 
-    private SearchView searchView;
     private RecyclerView recyclerView;
+    private CryptocurrenciesRecyclerViewAdapter adapter;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -115,7 +116,7 @@ public class CryptocurrenciesFragment extends Fragment implements OnCryptocurren
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         inflater.inflate(R.menu.cryptocurrencies_filter, menu);
 
-        searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
         searchView.setOnQueryTextListener(this);
 
         super.onCreateOptionsMenu(menu, inflater);
@@ -135,25 +136,24 @@ public class CryptocurrenciesFragment extends Fragment implements OnCryptocurren
 
     @Override
     public void onCryptocurrenciesChanged(@NonNull List<CryptocurrencyHolder> cryptocurrencies) {
-        getActivity().runOnUiThread(() -> {
-            if (recyclerView != null && recyclerView.getAdapter() != null) {
-                recyclerView.getAdapter().notifyDataSetChanged();
-                CryptocurrenciesRecyclerViewAdapter adapter =
-                        (CryptocurrenciesRecyclerViewAdapter) recyclerView.getAdapter();
-                adapter.getFilter().filter(adapter.getFilterText());
-            } else if (recyclerView != null) {
-
-                CryptocurrenciesRecyclerViewAdapter cryptocurrenciesRecyclerViewAdapter =
-                        new CryptocurrenciesRecyclerViewAdapter(cryptocurrencies, mListener);
-                cryptocurrenciesRecyclerViewAdapter.setOnRequestCryptocurrencyUpdateListener(this);
-                recyclerView.setAdapter(cryptocurrenciesRecyclerViewAdapter);
-            }
-        });
+        if (getActivity() != null)
+            getActivity().runOnUiThread(() -> {
+                if (adapter != null) {
+                    adapter.notifyDataSetChanged();
+                    adapter.getFilter().filter(adapter.getFilterText());
+                } else if (recyclerView != null) {
+                    adapter = new CryptocurrenciesRecyclerViewAdapter(cryptocurrencies, mListener);
+                    adapter.setOnRequestCryptocurrencyUpdateListener(this);
+                    recyclerView.setAdapter(adapter);
+                }
+            });
     }
 
     @Override
     public void onNetworkError(int code, @NonNull String message) {
-        getActivity().runOnUiThread(() -> Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show());
+        if (getActivity() != null)
+            getActivity().runOnUiThread(
+                    () -> Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show());
     }
 
     @Override
@@ -168,19 +168,22 @@ public class CryptocurrenciesFragment extends Fragment implements OnCryptocurren
 
     @Override
     public boolean onQueryTextSubmit(String query) {
-        if (recyclerView == null)
+        if (getActivity() != null && getActivity().getCurrentFocus() != null)
+            Keyboard.clear(getActivity(), getActivity().getCurrentFocus());
+
+        if (adapter == null)
             return false;
 
-        ((CryptocurrenciesRecyclerViewAdapter) recyclerView.getAdapter()).getFilter().filter(query);
+        adapter.getFilter().filter(query);
         return true;
     }
 
     @Override
     public boolean onQueryTextChange(String newText) {
-        if (recyclerView == null)
+        if (adapter == null)
             return false;
 
-        ((CryptocurrenciesRecyclerViewAdapter) recyclerView.getAdapter()).getFilter().filter(newText);
+        adapter.getFilter().filter(newText);
         return true;
     }
 
