@@ -1,0 +1,35 @@
+apply plugin: 'com.android.feature'
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        minSdkVersion 15
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation project(':base')
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'androidx.test:runner:1.1.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
+
+    implementation 'com.squareup.retrofit2:retrofit:2.5.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.5.0'
+
+    def room_version = "1.1.1"
+
+    implementation 'androidx.room:room-runtime:2.1.0-alpha03'
+    annotationProcessor 'androidx.room:room-compiler:2.1.0-alpha03' // use kapt for Kotlin
+
+    implementation 'com.facebook.fresco:fresco:1.11.0'
+}
