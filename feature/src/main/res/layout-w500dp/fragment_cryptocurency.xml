@@ -82,15 +82,16 @@
 
     <LinearLayout
         android:id="@+id/cryptocurrencies_section_menu"
-        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:visibility="gone"
         android:paddingHorizontal="16dp"
         android:paddingBottom="16dp"
         android:gravity="center"
         android:orientation="horizontal">
 
         <LinearLayout
+            android:id="@+id/cryptocurrencies_action_buy"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -112,6 +113,7 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/cryptocurrencies_action_notify"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -133,6 +135,7 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/cryptocurrencies_action_charts"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -154,6 +157,7 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/cryptocurrencies_action_details"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"

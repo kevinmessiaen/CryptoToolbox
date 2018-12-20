@@ -84,7 +84,7 @@ public class CryptocurrenciesRecyclerViewAdapter extends
                 filtered.get(position - 1).getIsFavorite()) {
             holder.headerLinearLayout.setVisibility(View.VISIBLE);
             holder.isFavoriteImageView.setVisibility(View.GONE);
-            holder.headerNameTextView.setText("ALL");
+            holder.headerNameTextView.setText((filter == null || filter.isEmpty()) ? "ALL" : filter.toUpperCase());
         } else if (holder.item.getIsFavorite()) {
             holder.isFavoriteImageView.setVisibility(View.VISIBLE);
             holder.headerLinearLayout.setVisibility(View.GONE);
@@ -108,6 +108,12 @@ public class CryptocurrenciesRecyclerViewAdapter extends
                     if (listener != null) return listener.onCryptocurrencyLongClick(holder.item);
                     return false;
                 });
+
+        holder.actionBuyLinearLayout.setOnClickListener(v -> System.out.println("buy"));
+        holder.actionNotifyLinearLayout.setOnClickListener(v -> System.out.println("notify"));
+        holder.actionChartsLinearLayout.setOnClickListener(v -> System.out.println("charts"));
+        holder.actionDetailsLinearLayout.setOnClickListener(v -> System.out.println("details"));
+
 
         if (onRequestCryptocurrencyUpdateListener != null &&
                 holder.item.shouldUpdateQuotes(CoinMarketCap.AUTO_UPDATE_CRYPTOCURRENCY_QUOTES_DELAY))
@@ -167,6 +173,10 @@ public class CryptocurrenciesRecyclerViewAdapter extends
         private final ImageView isFavoriteImageView;
         private final TextView headerNameTextView;
         private final LinearLayout menuLinearLayout;
+        private final LinearLayout actionBuyLinearLayout;
+        private final LinearLayout actionNotifyLinearLayout;
+        private final LinearLayout actionChartsLinearLayout;
+        private final LinearLayout actionDetailsLinearLayout;
         private CryptocurrencyHolder item;
 
         private ViewHolder(View view) {
@@ -181,6 +191,10 @@ public class CryptocurrenciesRecyclerViewAdapter extends
             isFavoriteImageView = view.findViewById(R.id.cryptocurrencies_is_favorite);
             headerNameTextView = view.findViewById(R.id.cryptocurrency_header_name);
             menuLinearLayout= view.findViewById(R.id.cryptocurrencies_section_menu);
+            actionBuyLinearLayout = view.findViewById(R.id.cryptocurrencies_action_buy);
+            actionNotifyLinearLayout = view.findViewById(R.id.cryptocurrencies_action_notify);
+            actionChartsLinearLayout = view.findViewById(R.id.cryptocurrencies_action_charts);
+            actionDetailsLinearLayout = view.findViewById(R.id.cryptocurrencies_action_details);
         }
     }
 
