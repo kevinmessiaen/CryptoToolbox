@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Crypto Toolbox</string>
+    <string name="cryptocurrencies_all">Tout</string>
+    <string name="cryptocurrencies_favorites">Favoris</string>
+    <string name="cryptocurrency_action_buy">Acheter</string>
+    <string name="cryptocurrency_action_notify">Notifier</string>
+    <string name="cryptocurrency_action_charts">Graphiques</string>
+    <string name="cryptocurrency_action_details">Détails</string>
+</resources>

@@ -1,45 +1,91 @@
 package com.messiaen.cryptotoolbox.feature.utils;
 
+import android.annotation.TargetApi;
+import android.os.Build;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextPaint;
 import android.text.style.CharacterStyle;
-import android.text.style.UnderlineSpan;
 import android.text.style.UpdateAppearance;
 import android.widget.TextView;
 
 import com.messiaen.cryptotoolbox.feature.CryptoToolsApplication;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.stream.Stream;
+
+import androidx.annotation.NonNull;
 
 public class Highlight {
 
-    public static void underlineString(TextView textView, String text, String string) {
-        SpannableString spannableString = new SpannableString(text);
+    public static void underlineString(@NonNull final TextView textView, @NonNull final String text,
+                                       final String... strings) {
+        if (strings == null || strings.length == 0) {
+            textView.setText(text);
+            return;
+        }
 
-        ColoredUnderlineSpan[] underlineSpans =
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.N)
+            performUnderlineString(textView, text,
+                    Arrays.stream(strings).filter(s -> !s.isEmpty()).map(String::toUpperCase));
+        else
+            performUnderlineString(textView, text, strings);
+    }
+
+    @TargetApi(Build.VERSION_CODES.N)
+    private static void performUnderlineString(@NonNull final TextView textView, @NonNull final String text,
+                                               @NonNull final Stream<String> stringStream) {
+        final SpannableString spannableString = new SpannableString(text);
+
+        Arrays.stream(spannableString
+                .getSpans(0, spannableString.length(), ColoredUnderlineSpan.class))
+                .forEach(coloredUnderlineSpan -> spannableString.removeSpan(coloredUnderlineSpan));
+
+        final String upperText = text.toUpperCase();
+        stringStream.forEach(s -> {
+            int indexOfKeyword = upperText.indexOf(s);
+            while (indexOfKeyword != -1) {
+                spannableString.setSpan(
+                        new ColoredUnderlineSpan(CryptoToolsApplication.COLOR_ACCENT_LIGHT),
+                        indexOfKeyword, indexOfKeyword + s.length(),
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                indexOfKeyword = upperText.indexOf(s, indexOfKeyword + s.length());
+            }
+        });
+
+        textView.setText(spannableString);
+    }
+
+    private static void performUnderlineString(@NonNull final TextView textView,
+                                               @NonNull final String text,
+                                               @NonNull final String... strings) {
+        final SpannableString spannableString = new SpannableString(text);
+
+        final ColoredUnderlineSpan[] underlineSpans =
                 spannableString.getSpans(0, spannableString.length(), ColoredUnderlineSpan.class);
 
         for (ColoredUnderlineSpan underlineSpan : underlineSpans)
             spannableString.removeSpan(underlineSpan);
 
-        if (string != null && !string.isEmpty()) {
-            String lowerText = spannableString.toString().toLowerCase();
-            String lowerKeyword = string.toLowerCase();
-            int indexOfKeyword = lowerText.indexOf(lowerKeyword);
+        for (String string : strings) {
+            if (string != null && !string.isEmpty()) {
+                final String lowerText = spannableString.toString().toLowerCase();
+                final String lowerKeyword = string.toLowerCase();
+                int indexOfKeyword = lowerText.indexOf(lowerKeyword);
 
-            while (indexOfKeyword != -1) {
-                spannableString.setSpan(new ColoredUnderlineSpan(CryptoToolsApplication.COLOR_ACCENT_LIGHT),
-                        indexOfKeyword, indexOfKeyword + lowerKeyword.length(),
-                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                indexOfKeyword = lowerText.indexOf(lowerKeyword,
-                        indexOfKeyword + lowerKeyword.length());
+                while (indexOfKeyword != -1) {
+                    spannableString.setSpan(
+                            new ColoredUnderlineSpan(CryptoToolsApplication.COLOR_ACCENT_LIGHT),
+                            indexOfKeyword, indexOfKeyword + lowerKeyword.length(),
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    indexOfKeyword = lowerText.indexOf(lowerKeyword,
+                            indexOfKeyword + lowerKeyword.length());
+                }
             }
-
-            textView.setText(spannableString);
-        } else {
-            textView.setText(text);
         }
+
+        textView.setText(spannableString);
     }
 
     final static class ColoredUnderlineSpan extends CharacterStyle implements UpdateAppearance {

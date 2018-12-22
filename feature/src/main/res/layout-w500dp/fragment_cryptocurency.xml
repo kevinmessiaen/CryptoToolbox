@@ -37,15 +37,17 @@
             android:layout_gravity="center" />
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="16dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
             android:layout_weight="1"
             android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                tools:ignore="UseCompoundDrawables">
 
                 <TextView
                     android:id="@+id/cryptocurrency_name"
@@ -59,8 +61,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_marginLeft="4dp"
+                    android:layout_marginStart="4dp"
                     android:src="@drawable/ic_favorite_black_32dp"
-                    android:tint="@color/colorAccent" />
+                    android:tint="@color/colorAccent"
+                    android:contentDescription="@string/cryptocurrencies_favorites"/>
             </LinearLayout>
 
             <TextView
@@ -84,32 +88,32 @@
         android:id="@+id/cryptocurrencies_section_menu"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:paddingHorizontal="16dp"
+        android:layout_marginLeft="32dp"
+        android:layout_marginRight="32dp"
         android:paddingBottom="16dp"
         android:gravity="center"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:baselineAligned="false">
 
         <LinearLayout
             android:id="@+id/cryptocurrencies_action_buy"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginHorizontal="16dp"
             android:background="?attr/selectableItemBackground"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:gravity="center">
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/ic_attach_money_black_24dp"
-                android:layout_gravity="center"/>
+                android:contentDescription="@string/cryptocurrency_action_buy"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="Buy"/>
+                android:text="@string/cryptocurrency_action_buy"/>
         </LinearLayout>
 
         <LinearLayout
@@ -117,21 +121,20 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginHorizontal="16dp"
             android:background="?attr/selectableItemBackground"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:gravity="center">
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/ic_notifications_none_black_24dp"
-                android:layout_gravity="center"/>
+                android:contentDescription="@string/cryptocurrency_action_notify"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="Notify"/>
+                android:text="@string/cryptocurrency_action_notify"/>
         </LinearLayout>
 
         <LinearLayout
@@ -139,21 +142,20 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginHorizontal="16dp"
             android:background="?attr/selectableItemBackground"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:gravity="center">
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/ic_show_chart_black_24dp"
-                android:layout_gravity="center"/>
+                android:contentDescription="@string/cryptocurrency_action_charts"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="Charts"/>
+                android:text="@string/cryptocurrency_action_charts"/>
         </LinearLayout>
 
         <LinearLayout
@@ -161,24 +163,22 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginHorizontal="16dp"
             android:background="?attr/selectableItemBackground"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:gravity="center">
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/ic_info_outline_black_24dp"
-                android:layout_gravity="center"/>
+                android:contentDescription="@string/cryptocurrency_action_details"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="Details"/>
+                android:text="@string/cryptocurrency_action_details"/>
         </LinearLayout>
 
     </LinearLayout>
-
 
 </LinearLayout>

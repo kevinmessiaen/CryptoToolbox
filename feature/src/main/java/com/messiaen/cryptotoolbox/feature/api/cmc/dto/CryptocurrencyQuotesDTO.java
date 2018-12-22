@@ -1,10 +1,16 @@
 package com.messiaen.cryptotoolbox.feature.api.cmc.dto;
 
+import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.CryptocurrencyHolder;
+import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.CryptocurrencyHolderUpdater;
+import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.Platform;
+import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.Quote;
+
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CryptocurrencyQuotesDTO {
+public class CryptocurrencyQuotesDTO  implements CryptocurrencyHolderUpdater {
 
     private int id;
     private String name;
@@ -134,5 +140,34 @@ public class CryptocurrencyQuotesDTO {
 
     public void setQuote(Map<String, QuoteDTO> quote) {
         this.quote = quote;
+    }
+
+    @Override
+    public CryptocurrencyHolder update(CryptocurrencyHolder holder) {
+        holder = (holder == null) ? new CryptocurrencyHolder() : holder;
+        holder.setId(id);
+        holder.setName(name);
+        holder.setSymbol(symbol);
+        holder.setSlug(slug);
+        holder.setCmcRank(cmcRank);
+        holder.setNumMarketPairs(numMarketPairs);
+        holder.setCirculatingSupply(circulatingSupply);
+        holder.setTotalSupply(totalSupply);
+        holder.setMaxSupply(maxSupply);
+        holder.setLastUpdated(lastUpdated);
+        holder.setDateAdded(dateAdded);
+        holder.setTags(tags);
+        if (platform != null)
+            holder.setPlatform(new Platform(platform));
+        Map<String, Quote> quote = holder.getQuote();
+        if (quote == null)
+            quote = new HashMap<>();
+        QuoteDTO q;
+        for (String key : this.quote.keySet())
+            if ((q = this.quote.get(key)) != null)
+                quote.put(key, new Quote(q));
+        holder.setQuote(quote);
+        holder.setLastTimePriceRefreshed(new Date());
+        return holder;
     }
 }

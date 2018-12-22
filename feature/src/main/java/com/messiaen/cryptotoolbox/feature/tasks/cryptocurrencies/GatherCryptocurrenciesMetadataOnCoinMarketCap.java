@@ -35,7 +35,8 @@ public class GatherCryptocurrenciesMetadataOnCoinMarketCap extends AsyncTask<Voi
                 if (response.body() == null)
                     return null;
 
-                CryptocurrenciesManager.getInstance().updateMetadata(response.body().getData());
+                CryptocurrenciesManager.getInstance().onUpdate(response.body().getData().values(),
+                        CryptocurrenciesManager.METADATA);
 
                 return null;
             } else {
@@ -43,11 +44,12 @@ public class GatherCryptocurrenciesMetadataOnCoinMarketCap extends AsyncTask<Voi
                     return null;
 
                 CryptocurrenciesManager.getInstance().onListCryptocurrenciesFailed(response.code(),
-                        response.errorBody().string());
+                        response.errorBody().string(), CryptocurrenciesManager.METADATA);
                 return null;
             }
         } catch (IOException e) {
-            CryptocurrenciesManager.getInstance().onListCryptocurrenciesFailed(0, e.getMessage());
+            CryptocurrenciesManager.getInstance().onListCryptocurrenciesFailed(0, e.getMessage(),
+                    CryptocurrenciesManager.METADATA);
             return null;
         }
     }

@@ -3,7 +3,6 @@ package com.messiaen.cryptotoolbox.feature.api.cmc.results;
 import com.messiaen.cryptotoolbox.feature.api.cmc.dto.CryptocurrencyQuotesDTO;
 import com.messiaen.cryptotoolbox.feature.api.cmc.dto.StatusDTO;
 
-import java.util.List;
 import java.util.Map;
 
 public class CryptocurrenciesQuotesDTO {

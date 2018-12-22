@@ -1,8 +1,12 @@
 package com.messiaen.cryptotoolbox.feature.api.cmc.dto;
 
+import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.CryptocurrencyHolder;
+import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.CryptocurrencyHolderUpdater;
+import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.Platform;
+
 import java.util.Date;
 
-public class CryptocurrencyIDMapDTO {
+public class CryptocurrencyIDMapDTO implements CryptocurrencyHolderUpdater {
 
     private int id;
     private String name;
@@ -75,5 +79,20 @@ public class CryptocurrencyIDMapDTO {
 
     public void setPlatform(PlatformDTO platform) {
         this.platform = platform;
+    }
+
+    @Override
+    public CryptocurrencyHolder update(CryptocurrencyHolder holder) {
+        holder = (holder == null) ? new CryptocurrencyHolder() : holder;
+        holder.setId(id);
+        holder.setName(name);
+        holder.setSymbol(symbol);
+        holder.setSlug(slug);
+        holder.setIsActive(isActive);
+        holder.setFirstHistoricalData(firstHistoricalData);
+        holder.setLastHistoricalData(lastHistoricalData);
+        if (platform != null)
+            holder.setPlatform(new Platform(platform));
+        return holder;
     }
 }

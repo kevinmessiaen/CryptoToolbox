@@ -21,7 +21,6 @@ public class MainActivity extends AppCompatActivity implements CryptocurrenciesF
     public void onCryptocurrencyClick(CryptocurrencyHolder item) {
         item.setIsFavorite(!item.getIsFavorite());
         new Thread(() -> CryptocurrenciesManager.getInstance().notifyChange(item));
-        return;
     }
 
     @Override

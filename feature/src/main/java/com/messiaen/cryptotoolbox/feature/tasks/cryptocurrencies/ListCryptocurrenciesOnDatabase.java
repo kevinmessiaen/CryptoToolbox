@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import com.messiaen.cryptotoolbox.feature.api.cmc.CoinMarketCap;
 import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.CryptocurrenciesManager;
 import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.CryptocurrencyHolder;
+import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.CryptocurrencyHolderUpdater;
 import com.messiaen.cryptotoolbox.feature.persistence.ApiCallHistory;
 import com.messiaen.cryptotoolbox.feature.persistence.DatabaseManager;
 
@@ -27,7 +28,7 @@ public class ListCryptocurrenciesOnDatabase extends AsyncTask<Void, Void, Void> 
                     CoinMarketCap.AUTO_UPDATE_CRYPTOCURRENCY_MAP_DELAY))
                 CryptocurrenciesManager.getInstance().onRequestCryptocurrenciesUpdate();
 
-            CryptocurrenciesManager.getInstance().onListCryptocurrencies(cryptocurrencies);
+            CryptocurrenciesManager.getInstance().onUpdate(cryptocurrencies, CryptocurrenciesManager.MAP);
         }
 
         CryptocurrenciesManager.getInstance().onRequestCryptocurrenciesUpdate();

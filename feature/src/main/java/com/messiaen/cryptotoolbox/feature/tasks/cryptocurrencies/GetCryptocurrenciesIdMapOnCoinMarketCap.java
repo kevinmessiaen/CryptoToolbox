@@ -43,7 +43,8 @@ public class GetCryptocurrenciesIdMapOnCoinMarketCap extends AsyncTask<Void, Voi
                     apiCallHistoryDao.update(history);
                 }
 
-                CryptocurrenciesManager.getInstance().updateIdMap(response.body().getData());
+                CryptocurrenciesManager.getInstance().onUpdate(response.body().getData(),
+                        CryptocurrenciesManager.MAP);
 
                 return null;
             } else {
@@ -51,11 +52,12 @@ public class GetCryptocurrenciesIdMapOnCoinMarketCap extends AsyncTask<Void, Voi
                     return null;
 
                 CryptocurrenciesManager.getInstance().onListCryptocurrenciesFailed(response.code(),
-                        response.errorBody().string());
+                        response.errorBody().string(), CryptocurrenciesManager.MAP);
                 return null;
             }
         } catch (IOException e) {
-            CryptocurrenciesManager.getInstance().onListCryptocurrenciesFailed(0, e.getMessage());
+            CryptocurrenciesManager.getInstance().onListCryptocurrenciesFailed(0, e.getMessage(),
+                    CryptocurrenciesManager.MAP);
             return null;
         }
     }

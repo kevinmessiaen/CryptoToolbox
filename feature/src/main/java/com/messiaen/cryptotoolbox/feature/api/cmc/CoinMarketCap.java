@@ -16,22 +16,22 @@ public class CoinMarketCap {
 
     private static String API_VERSION = "V1";
 
-    public static String BASE_ID = API_NAME + "_" + API_VERSION;
+    private static String BASE_ID = API_NAME + "_" + API_VERSION;
 
     public static String MAP_ALL_CRYPTOCURRENCIES = CoinMarketCap.BASE_ID + "_CRYPTOCURRENCY_MAP";
 
-    private static long ONE_HOUR = 1000l * 60l * 60l;
-    private static long ONE_DAY = ONE_HOUR * 24l;
+    private static long ONE_HOUR = 1000 * 60 * 60;
+    private static long ONE_DAY = ONE_HOUR * 24;
 
-    private static long AUTO_UPDATE_CRYPTOCURRENCY_MAP_DELAY_IN_DAYS = 1l;
+    private static long AUTO_UPDATE_CRYPTOCURRENCY_MAP_DELAY_IN_DAYS = 1;
     public static long AUTO_UPDATE_CRYPTOCURRENCY_MAP_DELAY =
             ONE_DAY * AUTO_UPDATE_CRYPTOCURRENCY_MAP_DELAY_IN_DAYS;
 
-    private static long AUTO_UPDATE_CRYPTOCURRENCY_METADATA_DELAY_IN_DAYS = 7l;
+    private static long AUTO_UPDATE_CRYPTOCURRENCY_METADATA_DELAY_IN_DAYS = 7;
     public static long AUTO_UPDATE_CRYPTOCURRENCY_METADATA_DELAY =
             ONE_DAY * AUTO_UPDATE_CRYPTOCURRENCY_METADATA_DELAY_IN_DAYS;
 
-    private static long AUTO_UPDATE_CRYPTOCURRENCY_LISTING_DELAY_IN_HOURS = 1l;
+    private static long AUTO_UPDATE_CRYPTOCURRENCY_LISTING_DELAY_IN_HOURS = 1;
     public static long AUTO_UPDATE_CRYPTOCURRENCY_QUOTES_DELAY =
             ONE_HOUR * AUTO_UPDATE_CRYPTOCURRENCY_LISTING_DELAY_IN_HOURS;
 

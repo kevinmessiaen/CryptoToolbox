@@ -8,6 +8,7 @@ import com.messiaen.cryptotoolbox.feature.api.cmc.queries.IdsQueryParameters;
 import com.messiaen.cryptotoolbox.feature.api.cmc.results.CryptocurrenciesQuotesDTO;
 import com.messiaen.cryptotoolbox.feature.api.cmc.services.CryptocurrenciesService;
 import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.CryptocurrenciesManager;
+import com.messiaen.cryptotoolbox.feature.utils.Currencies;
 
 import java.io.IOException;
 
@@ -29,14 +30,15 @@ public class CryptocurrenciesQuotesOnCoinMarketCap extends AsyncTask<Void, Void,
                     CoinMarketCap
                             .getService(CryptocurrenciesService.class)
                             .getQuotes(CryptoToolsApplication.CMC_API_KEY,
-                                    query.getId())
+                                    query.getId(), Currencies.getDefaultLocal().toString())
                             .execute();
 
             if (response.isSuccessful()) {
                 if (response.body() == null)
                     return null;
 
-                CryptocurrenciesManager.getInstance().updateQuotes(response.body().getData());
+                CryptocurrenciesManager.getInstance().onUpdate(response.body().getData().values(),
+                        CryptocurrenciesManager.QUOTES);
 
                 return null;
             } else {
@@ -44,11 +46,12 @@ public class CryptocurrenciesQuotesOnCoinMarketCap extends AsyncTask<Void, Void,
                     return null;
 
                 CryptocurrenciesManager.getInstance().onListCryptocurrenciesFailed(response.code(),
-                        response.errorBody().string());
+                        response.errorBody().string(), CryptocurrenciesManager.QUOTES);
                 return null;
             }
         } catch (IOException e) {
-            CryptocurrenciesManager.getInstance().onListCryptocurrenciesFailed(0, e.getMessage());
+            CryptocurrenciesManager.getInstance().onListCryptocurrenciesFailed(0, e.getMessage(),
+                    CryptocurrenciesManager.QUOTES);
             return null;
         }
     }

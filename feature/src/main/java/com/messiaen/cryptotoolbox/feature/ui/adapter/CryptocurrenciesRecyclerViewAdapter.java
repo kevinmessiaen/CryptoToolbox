@@ -4,8 +4,6 @@ import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Filter;
-import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -14,12 +12,15 @@ import com.facebook.drawee.view.SimpleDraweeView;
 import com.messiaen.cryptotoolbox.feature.R;
 import com.messiaen.cryptotoolbox.feature.api.cmc.CoinMarketCap;
 import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.CryptocurrencyHolder;
+import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.Quote;
 import com.messiaen.cryptotoolbox.feature.listeners.OnRequestCryptocurrencyUpdateListener;
+import com.messiaen.cryptotoolbox.feature.tasks.filters.PerformCryptocurrenciesFiltering;
 import com.messiaen.cryptotoolbox.feature.ui.fragment.CryptocurrenciesFragment.OnListFragmentInteractionListener;
+import com.messiaen.cryptotoolbox.feature.utils.Currencies;
+import com.messiaen.cryptotoolbox.feature.utils.Formatters;
 import com.messiaen.cryptotoolbox.feature.utils.Highlight;
 
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -31,23 +32,25 @@ import androidx.recyclerview.widget.RecyclerView;
  * specified {@link OnListFragmentInteractionListener}.
  */
 public class CryptocurrenciesRecyclerViewAdapter extends
-        RecyclerView.Adapter<CryptocurrenciesRecyclerViewAdapter.ViewHolder>
-        implements Filterable {
+        RecyclerView.Adapter<CryptocurrenciesRecyclerViewAdapter.ViewHolder> {
 
     private final List<CryptocurrencyHolder> cryptocurrencies;
     private List<CryptocurrencyHolder> filtered;
-    private final OnListFragmentInteractionListener listener;
-    private OnRequestCryptocurrencyUpdateListener onRequestCryptocurrencyUpdateListener;
+
+    private PerformCryptocurrenciesFiltering filterTask;
+    private String[] filters;
+
     private final NumberFormat currencyFormat;
 
-    private String filter = "";
+    private final OnListFragmentInteractionListener listener;
+    private OnRequestCryptocurrencyUpdateListener onRequestCryptocurrencyUpdateListener;
 
     public CryptocurrenciesRecyclerViewAdapter(List<CryptocurrencyHolder> items,
                                                OnListFragmentInteractionListener listener) {
         cryptocurrencies = items;
         filtered = cryptocurrencies;
         this.listener = listener;
-        currencyFormat = NumberFormat.getCurrencyInstance(Locale.US);
+        currencyFormat = Formatters.getCurrencyFormat(Currencies.getDefaultLocal().toString());
     }
 
     @Override
@@ -60,70 +63,7 @@ public class CryptocurrenciesRecyclerViewAdapter extends
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
-        holder.item = filtered.get(position);
-
-        Highlight.underlineString(holder.nameTextView, holder.item.getName(), filter);
-        Highlight.underlineString(holder.sybolTextView, holder.item.getSymbol(), filter);
-
-        if (holder.item.getQuote() != null)
-            holder.priceTextView.setText(
-                    currencyFormat.format(holder.item.getQuote().get("USD").getPrice()));
-        else
-            holder.priceTextView.setText("");
-
-        if (holder.item.getLogo() != null) {
-            Uri uri = Uri.parse(holder.item.getLogo().replace("64x64", "32x32"));
-            holder.logoSimpleDraweeView.setImageURI(uri);
-        }
-
-        if (position == 0 && holder.item.getIsFavorite()) {
-            holder.headerLinearLayout.setVisibility(View.VISIBLE);
-            holder.isFavoriteImageView.setVisibility(View.VISIBLE);
-            holder.headerNameTextView.setText("FAVORITES");
-        } else if (position > 0 && !holder.item.getIsFavorite() &&
-                filtered.get(position - 1).getIsFavorite()) {
-            holder.headerLinearLayout.setVisibility(View.VISIBLE);
-            holder.isFavoriteImageView.setVisibility(View.GONE);
-            holder.headerNameTextView.setText((filter == null || filter.isEmpty()) ? "ALL" : filter.toUpperCase());
-        } else if (holder.item.getIsFavorite()) {
-            holder.isFavoriteImageView.setVisibility(View.VISIBLE);
-            holder.headerLinearLayout.setVisibility(View.GONE);
-        } else {
-            holder.headerLinearLayout.setVisibility(View.GONE);
-            holder.isFavoriteImageView.setVisibility(View.GONE);
-        }
-
-        holder.menuLinearLayout.setVisibility(View.GONE);
-
-        holder.bodyLinearLayout.setOnClickListener(
-                v -> {
-                    holder.menuLinearLayout.setVisibility(
-                            (holder.menuLinearLayout.getVisibility() == View.GONE)
-                                    ? View.VISIBLE : View.GONE);
-                    if (listener != null) listener.onCryptocurrencyClick(holder.item);
-                });
-
-        holder.bodyLinearLayout.setOnLongClickListener(
-                v -> {
-                    if (listener != null) return listener.onCryptocurrencyLongClick(holder.item);
-                    return false;
-                });
-
-        holder.actionBuyLinearLayout.setOnClickListener(v -> System.out.println("buy"));
-        holder.actionNotifyLinearLayout.setOnClickListener(v -> System.out.println("notify"));
-        holder.actionChartsLinearLayout.setOnClickListener(v -> System.out.println("charts"));
-        holder.actionDetailsLinearLayout.setOnClickListener(v -> System.out.println("details"));
-
-
-        if (onRequestCryptocurrencyUpdateListener != null &&
-                holder.item.shouldUpdateQuotes(CoinMarketCap.AUTO_UPDATE_CRYPTOCURRENCY_QUOTES_DELAY))
-            onRequestCryptocurrencyUpdateListener
-                    .requestCryptocurrencyQuotesUpdate(position, filtered);
-        else if (onRequestCryptocurrencyUpdateListener != null &&
-                holder.item.shouldUpdateMetadata(CoinMarketCap.AUTO_UPDATE_CRYPTOCURRENCY_METADATA_DELAY))
-            onRequestCryptocurrencyUpdateListener
-                    .requestCryptocurrencyMetadataUpdate(position, filtered);
-
+        holder.updateView(position);
     }
 
     @Override
@@ -131,57 +71,64 @@ public class CryptocurrenciesRecyclerViewAdapter extends
         return filtered.size();
     }
 
-    @Override
-    public Filter getFilter() {
-        return new Filter() {
-            @Override
-            protected FilterResults performFiltering(CharSequence constraint) {
-                String charString = constraint.toString().toLowerCase();
-                filter = charString;
-                if (charString.isEmpty())
-                    filtered = cryptocurrencies;
-                else {
-                    List<CryptocurrencyHolder> tmp = new ArrayList<>();
-                    for (CryptocurrencyHolder holder : cryptocurrencies)
-                        if (holder.getName().toLowerCase().contains(charString) ||
-                                holder.getSymbol().toLowerCase().contains(charString))
-                            tmp.add(holder);
-                    filtered = tmp;
-                }
+    public String[] getFilters() {
+        return filters;
+    }
 
-                FilterResults filterResults = new FilterResults();
-                filterResults.values = filtered;
-                return filterResults;
-            }
+    public void setFilters(String... filters) {
+        this.filters = filters;
 
-            @Override
-            protected void publishResults(CharSequence constraint, FilterResults results) {
-                filtered = (ArrayList<CryptocurrencyHolder>) results.values;
-                notifyDataSetChanged();
-            }
-        };
+        if (filterTask != null) {
+            filterTask.cancel(true);
+            filterTask = null;
+        }
+
+        if (filters != null && filters.length > 0) {
+            filterTask = new PerformCryptocurrenciesFiltering(this);
+            filterTask.execute(filters);
+        } else {
+            filtered = cryptocurrencies;
+            notifyDataSetChanged();
+        }
+    }
+
+    public List<CryptocurrencyHolder> getCryptocurrencies() {
+        return cryptocurrencies;
+    }
+
+    public void setFiltered(List<CryptocurrencyHolder> filtered) {
+        this.filtered = filtered;
+    }
+
+    public void setOnRequestCryptocurrencyUpdateListener(
+            OnRequestCryptocurrencyUpdateListener onRequestCryptocurrencyUpdateListener) {
+        this.onRequestCryptocurrencyUpdateListener = onRequestCryptocurrencyUpdateListener;
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
         private final View view;
-        private final SimpleDraweeView logoSimpleDraweeView;
-        private final TextView nameTextView;
-        private final TextView sybolTextView;
-        private final TextView priceTextView;
-        private final LinearLayout headerLinearLayout;
-        private final LinearLayout bodyLinearLayout;
-        private final ImageView isFavoriteImageView;
-        private final TextView headerNameTextView;
-        private final LinearLayout menuLinearLayout;
-        private final LinearLayout actionBuyLinearLayout;
-        private final LinearLayout actionNotifyLinearLayout;
-        private final LinearLayout actionChartsLinearLayout;
-        private final LinearLayout actionDetailsLinearLayout;
+        private SimpleDraweeView logoSimpleDraweeView;
+        private TextView nameTextView;
+        private TextView sybolTextView;
+        private TextView priceTextView;
+        private LinearLayout headerLinearLayout;
+        private LinearLayout bodyLinearLayout;
+        private ImageView isFavoriteImageView;
+        private TextView headerNameTextView;
+        private LinearLayout menuLinearLayout;
+        private LinearLayout actionBuyLinearLayout;
+        private LinearLayout actionNotifyLinearLayout;
+        private LinearLayout actionChartsLinearLayout;
+        private LinearLayout actionDetailsLinearLayout;
         private CryptocurrencyHolder item;
 
         private ViewHolder(View view) {
             super(view);
             this.view = view;
+            bindView();
+        }
+
+        private void bindView() {
             logoSimpleDraweeView = view.findViewById(R.id.cryptocurrency_logo);
             nameTextView = view.findViewById(R.id.cryptocurrency_name);
             sybolTextView = view.findViewById(R.id.cryptocurrency_symbol);
@@ -190,19 +137,79 @@ public class CryptocurrenciesRecyclerViewAdapter extends
             bodyLinearLayout = view.findViewById(R.id.cryptocurrencies_section_body);
             isFavoriteImageView = view.findViewById(R.id.cryptocurrencies_is_favorite);
             headerNameTextView = view.findViewById(R.id.cryptocurrency_header_name);
-            menuLinearLayout= view.findViewById(R.id.cryptocurrencies_section_menu);
+            menuLinearLayout = view.findViewById(R.id.cryptocurrencies_section_menu);
             actionBuyLinearLayout = view.findViewById(R.id.cryptocurrencies_action_buy);
             actionNotifyLinearLayout = view.findViewById(R.id.cryptocurrencies_action_notify);
             actionChartsLinearLayout = view.findViewById(R.id.cryptocurrencies_action_charts);
             actionDetailsLinearLayout = view.findViewById(R.id.cryptocurrencies_action_details);
         }
-    }
 
-    public String getFilterText() {
-        return filter;
-    }
+        private void updateView(int position) {
+            item = filtered.get(position);
 
-    public void setOnRequestCryptocurrencyUpdateListener(OnRequestCryptocurrencyUpdateListener onRequestCryptocurrencyUpdateListener) {
-        this.onRequestCryptocurrencyUpdateListener = onRequestCryptocurrencyUpdateListener;
+            setBody();
+            setHeader(position == 0 ? null : filtered.get(position - 1));
+            setActionMenu();
+
+            if (onRequestCryptocurrencyUpdateListener != null)
+                validate(position);
+        }
+
+        private void setBody() {
+            Highlight.underlineString(nameTextView, item.getName(), filters);
+            Highlight.underlineString(sybolTextView, item.getSymbol(), filters);
+
+            Quote q;
+            if (item.getQuote() != null &&
+                    (q = item.getQuote().get(Currencies.getDefaultLocal().toString())) != null)
+                priceTextView.setText(
+                        currencyFormat.format(q.getPrice()));
+            else
+                priceTextView.setText("");
+
+            if (item.getLogo() != null) {
+                Uri uri = Uri.parse(item.getLogo().replace("64x64", "32x32"));
+                logoSimpleDraweeView.setImageURI(uri);
+            }
+
+            bodyLinearLayout.setOnClickListener(
+                    v -> {
+                        menuLinearLayout.setVisibility(
+                                (menuLinearLayout.getVisibility() == View.GONE)
+                                        ? View.VISIBLE : View.GONE);
+                        if (listener != null) listener.onCryptocurrencyClick(item);
+                    });
+
+            bodyLinearLayout.setOnLongClickListener(
+                    v -> {
+                        if (listener != null) return listener.onCryptocurrencyLongClick(item);
+                        return false;
+                    });
+        }
+
+        private void setHeader(CryptocurrencyHolder before) {
+            isFavoriteImageView.setVisibility(item.getIsFavorite() ? View.VISIBLE : View.GONE);
+            headerNameTextView.setText(item.getIsFavorite() ? "FAVORITE" : "ALL");
+            headerLinearLayout.setVisibility(
+                    (before == null || before.getIsFavorite() != item.getIsFavorite())
+                            ? View.VISIBLE : View.GONE);
+        }
+
+        private void setActionMenu() {
+            menuLinearLayout.setVisibility(View.GONE);
+            actionBuyLinearLayout.setOnClickListener(v -> System.out.println("buy"));
+            actionNotifyLinearLayout.setOnClickListener(v -> System.out.println("notify"));
+            actionChartsLinearLayout.setOnClickListener(v -> System.out.println("charts"));
+            actionDetailsLinearLayout.setOnClickListener(v -> System.out.println("details"));
+        }
+
+        private void validate(int position) {
+            if (item.shouldUpdateQuotes(CoinMarketCap.AUTO_UPDATE_CRYPTOCURRENCY_QUOTES_DELAY))
+                onRequestCryptocurrencyUpdateListener
+                        .requestCryptocurrencyQuotesUpdate(position, filtered);
+            if (item.shouldUpdateMetadata(CoinMarketCap.AUTO_UPDATE_CRYPTOCURRENCY_METADATA_DELAY))
+                onRequestCryptocurrencyUpdateListener
+                        .requestCryptocurrencyMetadataUpdate(position, filtered);
+        }
     }
 }

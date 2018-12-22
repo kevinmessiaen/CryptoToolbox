@@ -1,13 +1,17 @@
 package com.messiaen.cryptotoolbox.feature.data.cryptocurrency;
 
-import com.messiaen.cryptotoolbox.feature.api.cmc.dto.CryptocurrencyIDMapDTO;
-import com.messiaen.cryptotoolbox.feature.api.cmc.dto.CryptocurrencyQuotesDTO;
+import android.annotation.TargetApi;
+import android.os.Build;
+
 import com.messiaen.cryptotoolbox.feature.api.cmc.dto.CryptocurrencyMetadataDTO;
+import com.messiaen.cryptotoolbox.feature.api.cmc.dto.CryptocurrencyQuotesDTO;
+import com.messiaen.cryptotoolbox.feature.utils.Currencies;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Embedded;
@@ -15,7 +19,7 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 @Entity
-public class CryptocurrencyHolder {
+public class CryptocurrencyHolder implements CryptocurrencyHolderUpdater {
 
     @PrimaryKey
     private int id;
@@ -275,53 +279,35 @@ public class CryptocurrencyHolder {
     }
 
     public boolean shouldUpdateMetadata(long delay) {
-        return (lastTimeInfoRefreshed == null) ? true :
+        return lastTimeInfoRefreshed == null ||
                 new Date(new Date().getTime() - delay).after(lastTimeInfoRefreshed);
     }
 
     public boolean shouldUpdateQuotes(long delay) {
-        return (lastTimePriceRefreshed == null) ? true :
-                new Date(new Date().getTime() - delay).after(lastTimePriceRefreshed);
+        return lastTimePriceRefreshed == null || quote == null ||
+                new Date(new Date().getTime() - delay).after(lastTimePriceRefreshed) ||
+                !quote.containsKey(Currencies.getDefaultLocal().toString());
     }
 
-    public void update(CryptocurrencyIDMapDTO data) {
-        id = data.getId();
-        name = data.getName();
-        symbol = data.getSymbol();
-        slug = data.getSlug();
-        isActive = data.getIsActive();
-        firstHistoricalData = data.getFirstHistoricalData();
-        lastHistoricalData = data.getLastHistoricalData();
-        platform = new Platform(data.getPlatform());
+    @TargetApi(Build.VERSION_CODES.N)
+    public boolean filter(Stream<String> filterStream) {
+        if (name == null || symbol == null)
+            return false;
+
+        return filterStream
+                .map(s -> name.toUpperCase().contains(s) || symbol.toUpperCase().contains(s))
+                .reduce(false, (a, b) -> a || b);
     }
 
-    public void update(CryptocurrencyMetadataDTO data) {
-        id = data.getId();
-        category = data.getCategory();
-        logo = data.getLogo();
-        tags = data.getTags();
-        urls = new Urls(data.getUrls());
+    public boolean filter(String... filters) {
+        if (name == null || symbol == null)
+            return false;
 
-        lastTimeInfoRefreshed = new Date();
-    }
+        for (String filter : filters)
+            if (name.toUpperCase().contains(filter) || symbol.toUpperCase().contains(filter))
+                return true;
 
-    public void update(CryptocurrencyQuotesDTO data) {
-        id = data.getId();
-        cmcRank = data.getCmcRank();
-        numMarketPairs = data.getNumMarketPairs();
-        circulatingSupply = data.getCirculatingSupply();
-        totalSupply = data.getTotalSupply();
-        maxSupply = data.getMaxSupply();
-        lastUpdated = data.getLastUpdated();
-        dateAdded = data.getDateAdded();
-
-        if (quote == null)
-            quote = new HashMap<>();
-
-        for (String key : data.getQuote().keySet())
-            quote.put(key, new Quote(data.getQuote().get(key)));
-
-        lastTimePriceRefreshed = new Date();
+        return false;
     }
 
     @Override
@@ -335,5 +321,10 @@ public class CryptocurrencyHolder {
     @Override
     public int hashCode() {
         return id;
+    }
+
+    @Override
+    public CryptocurrencyHolder update(CryptocurrencyHolder holder) {
+        return this;
     }
 }

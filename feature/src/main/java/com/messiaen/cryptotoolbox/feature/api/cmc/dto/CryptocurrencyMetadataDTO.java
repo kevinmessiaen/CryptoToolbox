@@ -1,8 +1,14 @@
 package com.messiaen.cryptotoolbox.feature.api.cmc.dto;
 
+import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.CryptocurrencyHolder;
+import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.CryptocurrencyHolderUpdater;
+import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.Platform;
+import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.Urls;
+
+import java.util.Date;
 import java.util.List;
 
-public class CryptocurrencyMetadataDTO {
+public class CryptocurrencyMetadataDTO implements CryptocurrencyHolderUpdater {
 
     private int id;
     private String name;
@@ -87,5 +93,23 @@ public class CryptocurrencyMetadataDTO {
 
     public void setUrls(UrlsDTO urls) {
         this.urls = urls;
+    }
+
+    @Override
+    public CryptocurrencyHolder update(CryptocurrencyHolder holder) {
+        holder = (holder == null) ? new CryptocurrencyHolder() : holder;
+        holder.setId(id);
+        holder.setName(name);
+        holder.setSymbol(symbol);
+        holder.setCategory(category);
+        holder.setSlug(slug);
+        holder.setLogo(logo);
+        holder.setTags(tags);
+        if (platform != null)
+            holder.setPlatform(new Platform(platform));
+        if (urls != null)
+            holder.setUrls(new Urls(urls));
+        holder.setLastTimeInfoRefreshed(new Date());
+        return holder;
     }
 }

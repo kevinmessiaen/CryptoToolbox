@@ -140,7 +140,7 @@ public class CryptocurrenciesFragment extends Fragment implements OnCryptocurren
             getActivity().runOnUiThread(() -> {
                 if (adapter != null) {
                     adapter.notifyDataSetChanged();
-                    adapter.getFilter().filter(adapter.getFilterText());
+                    adapter.setFilters(adapter.getFilters());
                 } else if (recyclerView != null) {
                     adapter = new CryptocurrenciesRecyclerViewAdapter(cryptocurrencies, mListener);
                     adapter.setOnRequestCryptocurrencyUpdateListener(this);
@@ -174,7 +174,7 @@ public class CryptocurrenciesFragment extends Fragment implements OnCryptocurren
         if (adapter == null)
             return false;
 
-        adapter.getFilter().filter(query);
+        adapter.setFilters(query);
         return true;
     }
 
@@ -183,7 +183,7 @@ public class CryptocurrenciesFragment extends Fragment implements OnCryptocurren
         if (adapter == null)
             return false;
 
-        adapter.getFilter().filter(newText);
+        adapter.setFilters(newText);
         return true;
     }
 

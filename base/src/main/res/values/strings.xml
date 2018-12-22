@@ -1,5 +1,13 @@
 <resources>
     <string name="app_name">Crypto Toolbox</string>
 
-    <string name="database_name">crypto-toolbox-database</string>
+    <string name="database_name" translatable="false">crypto-toolbox-database</string>
+
+    <string name="cryptocurrencies_all">All</string>
+    <string name="cryptocurrencies_favorites">Favorites</string>
+
+    <string name="cryptocurrency_action_buy">Buy</string>
+    <string name="cryptocurrency_action_notify">Notify</string>
+    <string name="cryptocurrency_action_charts">Charts</string>
+    <string name="cryptocurrency_action_details">Details</string>
 </resources>

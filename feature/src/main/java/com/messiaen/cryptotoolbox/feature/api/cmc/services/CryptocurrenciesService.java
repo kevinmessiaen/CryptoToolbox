@@ -21,7 +21,7 @@ public interface CryptocurrenciesService {
 
     @GET("v1/cryptocurrency/quotes/latest")
     Call<CryptocurrenciesQuotesDTO> getQuotes(@Header("X-CMC_PRO_API_KEY") String apiKey
-            , @Query("id") String ids);
+            , @Query("id") String ids, @Query("convert") String currency);
 
     @GET("v1/cryptocurrency/listings/latest")
     Call<CryptocurrenciesListingDTO> getLatestListing(@Header("X-CMC_PRO_API_KEY") String apiKey
