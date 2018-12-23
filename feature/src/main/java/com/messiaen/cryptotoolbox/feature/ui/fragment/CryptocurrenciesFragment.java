@@ -11,14 +11,18 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.messiaen.cryptotoolbox.feature.R;
-import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.CryptocurrenciesManager;
-import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.CryptocurrencyHolder;
-import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.OnCryptocurrenciesDataEventListener;
-import com.messiaen.cryptotoolbox.feature.listeners.OnRequestCryptocurrencyUpdateListener;
+import com.messiaen.cryptotoolbox.feature.events.cryptocurrencies.CryptocurrenciesDataChangedEvent;
+import com.messiaen.cryptotoolbox.feature.events.cryptocurrencies.CryptocurrenciesUpdatedEvent;
+import com.messiaen.cryptotoolbox.feature.events.cryptocurrencies.CryptocurrencyClickEvent;
+import com.messiaen.cryptotoolbox.feature.events.error.NetworkErrorEvent;
+import com.messiaen.cryptotoolbox.feature.manager.CryptocurrenciesManager;
+import com.messiaen.cryptotoolbox.feature.persistence.entities.CryptocurrencyHolder;
 import com.messiaen.cryptotoolbox.feature.ui.adapter.CryptocurrenciesRecyclerViewAdapter;
 import com.messiaen.cryptotoolbox.feature.utils.Keyboard;
 
-import java.util.List;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SearchView;
@@ -27,16 +31,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-/**
- * A fragment representing a list of Items.
- * <p/>
- * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
- * interface.
- */
-public class CryptocurrenciesFragment extends Fragment implements OnCryptocurrenciesDataEventListener,
-        OnRequestCryptocurrencyUpdateListener, SearchView.OnQueryTextListener {
-
-    private OnListFragmentInteractionListener mListener;
+public class CryptocurrenciesFragment extends Fragment implements SearchView.OnQueryTextListener {
 
     private RecyclerView recyclerView;
     private CryptocurrenciesRecyclerViewAdapter adapter;
@@ -62,10 +57,17 @@ public class CryptocurrenciesFragment extends Fragment implements OnCryptocurren
 
         bind(view);
 
-        CryptocurrenciesManager.getInstance().setComparator(CryptocurrenciesManager.FAVORITES_FIRST);
-        CryptocurrenciesManager.getInstance().registerListener(this);
-
         return view;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        EventBus.getDefault().register(this);
+        //Init and register CryptocurrenciesManager if necessary
+        CryptocurrenciesManager.getInstance().setComparator(CryptocurrenciesManager.FAVORITES_FIRST);
+        CryptocurrenciesManager.getInstance().requestData();
     }
 
     private void bind(View view) {
@@ -87,29 +89,16 @@ public class CryptocurrenciesFragment extends Fragment implements OnCryptocurren
         }
     }
 
-
     @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        if (context instanceof OnListFragmentInteractionListener) {
-            mListener = (OnListFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnListFragmentInteractionListener");
-        }
-    }
+    public void onStop() {
+        super.onStop();
 
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
+        EventBus.getDefault().unregister(this);
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-
-        CryptocurrenciesManager.getInstance().unregisterListener(this);
     }
 
     @Override
@@ -124,46 +113,46 @@ public class CryptocurrenciesFragment extends Fragment implements OnCryptocurren
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_search:
-                return true;
-            default:
-                break;
-        }
+        if (item.getItemId() == R.id.action_search)
+            return true;
 
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onCryptocurrenciesChanged(@NonNull List<CryptocurrencyHolder> cryptocurrencies) {
-        if (getActivity() != null)
-            getActivity().runOnUiThread(() -> {
-                if (adapter != null) {
-                    adapter.notifyDataSetChanged();
-                    adapter.setFilters(adapter.getFilters());
-                } else if (recyclerView != null) {
-                    adapter = new CryptocurrenciesRecyclerViewAdapter(cryptocurrencies, mListener);
-                    adapter.setOnRequestCryptocurrencyUpdateListener(this);
-                    recyclerView.setAdapter(adapter);
-                }
-            });
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onCryptocurrenciesChanged(@NonNull CryptocurrenciesDataChangedEvent event) {
+        if (adapter != null) {
+            adapter.setFilters(adapter.getFilters());
+        } else if (recyclerView != null) {
+            adapter = new CryptocurrenciesRecyclerViewAdapter(event.getData());
+            recyclerView.setAdapter(adapter);
+        }
     }
 
-    @Override
-    public void onNetworkError(int code, @NonNull String message) {
-        if (getActivity() != null)
-            getActivity().runOnUiThread(
-                    () -> Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show());
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onNetworkError(@NonNull NetworkErrorEvent event) {
+        Toast.makeText(getContext(), event.getMessage(), Toast.LENGTH_SHORT).show();
     }
 
-    @Override
-    public void requestCryptocurrencyMetadataUpdate(int pos, List<CryptocurrencyHolder> holders) {
-        new Thread(() -> CryptocurrenciesManager.getInstance().refreshMetadata(pos, holders)).start();
-    }
-
-    @Override
-    public void requestCryptocurrencyQuotesUpdate(int pos, List<CryptocurrencyHolder> holders) {
-        new Thread(() -> CryptocurrenciesManager.getInstance().refreshQuotes(pos, holders)).start();
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onCryptocurrencyClick(CryptocurrencyClickEvent event) {
+        CryptocurrencyHolder item = event.getHolder();
+        switch (event.getType()) {
+            case BUY:
+                return;
+            case CHART:
+                return;
+            case NOTIFY:
+                return;
+            case DETAILS:
+                return;
+            case FAVORITE:
+                item.setIsFavorite(!item.getIsFavorite());
+                EventBus.getDefault().post(new CryptocurrenciesUpdatedEvent(item));
+                return;
+            default:
+                return;
+        }
     }
 
     @Override
@@ -185,22 +174,5 @@ public class CryptocurrenciesFragment extends Fragment implements OnCryptocurren
 
         adapter.setFilters(newText);
         return true;
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnListFragmentInteractionListener {
-        void onCryptocurrencyClick(CryptocurrencyHolder item);
-
-        boolean onCryptocurrencyLongClick(CryptocurrencyHolder item);
-
     }
 }

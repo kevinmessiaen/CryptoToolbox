@@ -1,4 +1,4 @@
-package com.messiaen.cryptotoolbox.feature.data.cryptocurrency;
+package com.messiaen.cryptotoolbox.feature.persistence.entities;
 
 import com.messiaen.cryptotoolbox.feature.api.cmc.dto.PlatformDTO;
 

@@ -4,7 +4,7 @@ import android.annotation.TargetApi;
 import android.os.AsyncTask;
 import android.os.Build;
 
-import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.CryptocurrencyHolder;
+import com.messiaen.cryptotoolbox.feature.persistence.entities.CryptocurrencyHolder;
 import com.messiaen.cryptotoolbox.feature.ui.adapter.CryptocurrenciesRecyclerViewAdapter;
 
 import java.util.ArrayList;
@@ -12,12 +12,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class PerformCryptocurrenciesFiltering
+public class CryptocurrenciesFilteringTask
         extends AsyncTask<String, Void, List<CryptocurrencyHolder>> {
 
     private CryptocurrenciesRecyclerViewAdapter adapter;
 
-    public PerformCryptocurrenciesFiltering(CryptocurrenciesRecyclerViewAdapter adapter) {
+    public CryptocurrenciesFilteringTask(CryptocurrenciesRecyclerViewAdapter adapter) {
         this.adapter = adapter;
     }
 

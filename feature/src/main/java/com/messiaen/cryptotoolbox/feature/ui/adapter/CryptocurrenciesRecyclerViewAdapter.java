@@ -10,46 +10,40 @@ import android.widget.TextView;
 
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.messiaen.cryptotoolbox.feature.R;
-import com.messiaen.cryptotoolbox.feature.api.cmc.CoinMarketCap;
-import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.CryptocurrencyHolder;
-import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.Quote;
-import com.messiaen.cryptotoolbox.feature.listeners.OnRequestCryptocurrencyUpdateListener;
-import com.messiaen.cryptotoolbox.feature.tasks.filters.PerformCryptocurrenciesFiltering;
-import com.messiaen.cryptotoolbox.feature.ui.fragment.CryptocurrenciesFragment.OnListFragmentInteractionListener;
+import com.messiaen.cryptotoolbox.feature.events.cryptocurrencies.CryptocurrenciesOutdatedEvent;
+import com.messiaen.cryptotoolbox.feature.events.cryptocurrencies.CryptocurrencyClickEvent;
+import com.messiaen.cryptotoolbox.feature.events.cryptocurrencies.CryptocurrencyClickEvent.Type;
+import com.messiaen.cryptotoolbox.feature.manager.CoinMarketCapManager;
+import com.messiaen.cryptotoolbox.feature.manager.CoinMarketCapManager.DataType;
+import com.messiaen.cryptotoolbox.feature.persistence.entities.CryptocurrencyHolder;
+import com.messiaen.cryptotoolbox.feature.persistence.entities.Quote;
+import com.messiaen.cryptotoolbox.feature.tasks.filters.CryptocurrenciesFilteringTask;
 import com.messiaen.cryptotoolbox.feature.utils.Currencies;
 import com.messiaen.cryptotoolbox.feature.utils.Formatters;
 import com.messiaen.cryptotoolbox.feature.utils.Highlight;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.text.NumberFormat;
 import java.util.List;
-import java.util.Locale;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-/**
- * {@link RecyclerView.Adapter} that can display a {@link CryptocurrencyHolder} and makes a call to the
- * specified {@link OnListFragmentInteractionListener}.
- */
 public class CryptocurrenciesRecyclerViewAdapter extends
         RecyclerView.Adapter<CryptocurrenciesRecyclerViewAdapter.ViewHolder> {
 
     private final List<CryptocurrencyHolder> cryptocurrencies;
     private List<CryptocurrencyHolder> filtered;
 
-    private PerformCryptocurrenciesFiltering filterTask;
+    private CryptocurrenciesFilteringTask filterTask;
     private String[] filters;
 
     private final NumberFormat currencyFormat;
 
-    private final OnListFragmentInteractionListener listener;
-    private OnRequestCryptocurrencyUpdateListener onRequestCryptocurrencyUpdateListener;
-
-    public CryptocurrenciesRecyclerViewAdapter(List<CryptocurrencyHolder> items,
-                                               OnListFragmentInteractionListener listener) {
+    public CryptocurrenciesRecyclerViewAdapter(List<CryptocurrencyHolder> items) {
         cryptocurrencies = items;
         filtered = cryptocurrencies;
-        this.listener = listener;
         currencyFormat = Formatters.getCurrencyFormat(Currencies.getDefaultLocal().toString());
     }
 
@@ -84,7 +78,7 @@ public class CryptocurrenciesRecyclerViewAdapter extends
         }
 
         if (filters != null && filters.length > 0) {
-            filterTask = new PerformCryptocurrenciesFiltering(this);
+            filterTask = new CryptocurrenciesFilteringTask(this);
             filterTask.execute(filters);
         } else {
             filtered = cryptocurrencies;
@@ -98,11 +92,6 @@ public class CryptocurrenciesRecyclerViewAdapter extends
 
     public void setFiltered(List<CryptocurrencyHolder> filtered) {
         this.filtered = filtered;
-    }
-
-    public void setOnRequestCryptocurrencyUpdateListener(
-            OnRequestCryptocurrencyUpdateListener onRequestCryptocurrencyUpdateListener) {
-        this.onRequestCryptocurrencyUpdateListener = onRequestCryptocurrencyUpdateListener;
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -150,9 +139,7 @@ public class CryptocurrenciesRecyclerViewAdapter extends
             setBody();
             setHeader(position == 0 ? null : filtered.get(position - 1));
             setActionMenu();
-
-            if (onRequestCryptocurrencyUpdateListener != null)
-                validate(position);
+            validate(position);
         }
 
         private void setBody() {
@@ -177,13 +164,12 @@ public class CryptocurrenciesRecyclerViewAdapter extends
                         menuLinearLayout.setVisibility(
                                 (menuLinearLayout.getVisibility() == View.GONE)
                                         ? View.VISIBLE : View.GONE);
-                        if (listener != null) listener.onCryptocurrencyClick(item);
                     });
 
             bodyLinearLayout.setOnLongClickListener(
                     v -> {
-                        if (listener != null) return listener.onCryptocurrencyLongClick(item);
-                        return false;
+                        EventBus.getDefault().post(new CryptocurrencyClickEvent(item, Type.FAVORITE));
+                        return true;
                     });
         }
 
@@ -197,19 +183,23 @@ public class CryptocurrenciesRecyclerViewAdapter extends
 
         private void setActionMenu() {
             menuLinearLayout.setVisibility(View.GONE);
-            actionBuyLinearLayout.setOnClickListener(v -> System.out.println("buy"));
-            actionNotifyLinearLayout.setOnClickListener(v -> System.out.println("notify"));
-            actionChartsLinearLayout.setOnClickListener(v -> System.out.println("charts"));
-            actionDetailsLinearLayout.setOnClickListener(v -> System.out.println("details"));
+            actionBuyLinearLayout.setOnClickListener(
+                    v -> EventBus.getDefault().post(new CryptocurrencyClickEvent(item, Type.BUY)));
+            actionNotifyLinearLayout.setOnClickListener(
+                    v -> EventBus.getDefault().post(new CryptocurrencyClickEvent(item, Type.NOTIFY)));
+            actionChartsLinearLayout.setOnClickListener(
+                    v -> EventBus.getDefault().post(new CryptocurrencyClickEvent(item, Type.CHART)));
+            actionDetailsLinearLayout.setOnClickListener(
+                    v -> EventBus.getDefault().post(new CryptocurrencyClickEvent(item, Type.DETAILS)));
         }
 
         private void validate(int position) {
-            if (item.shouldUpdateQuotes(CoinMarketCap.AUTO_UPDATE_CRYPTOCURRENCY_QUOTES_DELAY))
-                onRequestCryptocurrencyUpdateListener
-                        .requestCryptocurrencyQuotesUpdate(position, filtered);
-            if (item.shouldUpdateMetadata(CoinMarketCap.AUTO_UPDATE_CRYPTOCURRENCY_METADATA_DELAY))
-                onRequestCryptocurrencyUpdateListener
-                        .requestCryptocurrencyMetadataUpdate(position, filtered);
+            if (item.shouldUpdateMetadata(CoinMarketCapManager.AUTO_UPDATE_CRYPTOCURRENCY_METADATA_DELAY))
+                EventBus.getDefault().post(
+                        new CryptocurrenciesOutdatedEvent(position, filtered, DataType.METADATA));
+            if (item.shouldUpdateQuotes(CoinMarketCapManager.AUTO_UPDATE_CRYPTOCURRENCY_QUOTES_DELAY))
+                EventBus.getDefault().post(
+                        new CryptocurrenciesOutdatedEvent(position, filtered, DataType.QUOTES));
         }
     }
 }

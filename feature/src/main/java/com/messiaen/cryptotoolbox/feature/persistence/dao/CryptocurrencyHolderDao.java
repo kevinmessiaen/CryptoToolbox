@@ -1,6 +1,6 @@
 package com.messiaen.cryptotoolbox.feature.persistence.dao;
 
-import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.CryptocurrencyHolder;
+import com.messiaen.cryptotoolbox.feature.persistence.entities.CryptocurrencyHolder;
 
 import java.util.List;
 

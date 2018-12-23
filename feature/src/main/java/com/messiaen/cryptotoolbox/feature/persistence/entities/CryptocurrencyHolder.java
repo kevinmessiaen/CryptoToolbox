@@ -1,14 +1,11 @@
-package com.messiaen.cryptotoolbox.feature.data.cryptocurrency;
+package com.messiaen.cryptotoolbox.feature.persistence.entities;
 
 import android.annotation.TargetApi;
 import android.os.Build;
 
-import com.messiaen.cryptotoolbox.feature.api.cmc.dto.CryptocurrencyMetadataDTO;
-import com.messiaen.cryptotoolbox.feature.api.cmc.dto.CryptocurrencyQuotesDTO;
 import com.messiaen.cryptotoolbox.feature.utils.Currencies;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;

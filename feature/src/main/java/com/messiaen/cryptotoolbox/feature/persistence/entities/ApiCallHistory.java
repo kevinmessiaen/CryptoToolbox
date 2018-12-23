@@ -1,4 +1,4 @@
-package com.messiaen.cryptotoolbox.feature.persistence;
+package com.messiaen.cryptotoolbox.feature.persistence.entities;
 
 import java.util.Date;
 

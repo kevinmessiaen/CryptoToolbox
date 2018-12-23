@@ -4,8 +4,7 @@ import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.Quote;
-import com.messiaen.cryptotoolbox.feature.persistence.DatabaseManager;
+import com.messiaen.cryptotoolbox.feature.persistence.entities.Quote;
 
 import java.util.ArrayList;
 import java.util.Date;

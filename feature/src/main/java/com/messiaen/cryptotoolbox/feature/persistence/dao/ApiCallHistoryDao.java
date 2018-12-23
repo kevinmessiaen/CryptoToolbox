@@ -1,6 +1,6 @@
 package com.messiaen.cryptotoolbox.feature.persistence.dao;
 
-import com.messiaen.cryptotoolbox.feature.persistence.ApiCallHistory;
+import com.messiaen.cryptotoolbox.feature.persistence.entities.ApiCallHistory;
 
 import androidx.room.Dao;
 import androidx.room.Insert;

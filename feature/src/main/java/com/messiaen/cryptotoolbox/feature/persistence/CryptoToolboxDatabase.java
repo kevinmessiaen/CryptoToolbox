@@ -1,6 +1,7 @@
 package com.messiaen.cryptotoolbox.feature.persistence;
 
-import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.CryptocurrencyHolder;
+import com.messiaen.cryptotoolbox.feature.persistence.entities.ApiCallHistory;
+import com.messiaen.cryptotoolbox.feature.persistence.entities.CryptocurrencyHolder;
 import com.messiaen.cryptotoolbox.feature.persistence.dao.ApiCallHistoryDao;
 import com.messiaen.cryptotoolbox.feature.persistence.dao.CryptocurrencyHolderDao;
 import com.messiaen.cryptotoolbox.feature.utils.Converters;

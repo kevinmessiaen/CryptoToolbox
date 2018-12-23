@@ -1,9 +1,9 @@
 package com.messiaen.cryptotoolbox.feature.api.cmc.dto;
 
-import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.CryptocurrencyHolder;
-import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.CryptocurrencyHolderUpdater;
-import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.Platform;
-import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.Quote;
+import com.messiaen.cryptotoolbox.feature.persistence.entities.CryptocurrencyHolder;
+import com.messiaen.cryptotoolbox.feature.persistence.entities.CryptocurrencyHolderUpdater;
+import com.messiaen.cryptotoolbox.feature.persistence.entities.Platform;
+import com.messiaen.cryptotoolbox.feature.persistence.entities.Quote;
 
 import java.util.Date;
 import java.util.HashMap;

@@ -1,8 +1,9 @@
-package com.messiaen.cryptotoolbox.feature.data.cryptocurrency;
+package com.messiaen.cryptotoolbox.feature.persistence.entities;
 
 public interface CryptocurrencyHolderUpdater {
 
     int getId();
+    
     CryptocurrencyHolder update(CryptocurrencyHolder holder);
 
 }

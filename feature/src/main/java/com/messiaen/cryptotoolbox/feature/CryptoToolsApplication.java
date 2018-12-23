@@ -3,7 +3,7 @@ package com.messiaen.cryptotoolbox.feature;
 import android.app.Application;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
-import com.messiaen.cryptotoolbox.feature.api.cmc.CoinMarketCap;
+import com.messiaen.cryptotoolbox.feature.manager.CoinMarketCapManager;
 import com.messiaen.cryptotoolbox.feature.persistence.DatabaseManager;
 
 import androidx.annotation.ColorInt;
@@ -23,7 +23,7 @@ public class CryptoToolsApplication extends Application {
 
         bind(BuildConfig.DEBUG);
 
-        CoinMarketCap.init(cmcApiUrl);
+        CoinMarketCapManager.init(cmcApiUrl);
         DatabaseManager.init(getApplicationContext(), databaseName);
 
         Fresco.initialize(this);

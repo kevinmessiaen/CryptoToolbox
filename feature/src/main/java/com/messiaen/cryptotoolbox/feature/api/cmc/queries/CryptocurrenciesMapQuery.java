@@ -1,64 +1,59 @@
-package com.messiaen.cryptotoolbox.feature.tasks.cryptocurrencies;
-
-import android.os.AsyncTask;
+package com.messiaen.cryptotoolbox.feature.api.cmc.queries;
 
 import com.messiaen.cryptotoolbox.feature.CryptoToolsApplication;
-import com.messiaen.cryptotoolbox.feature.api.cmc.CoinMarketCap;
 import com.messiaen.cryptotoolbox.feature.api.cmc.results.CryptocurrenciesIDMapDTO;
 import com.messiaen.cryptotoolbox.feature.api.cmc.services.CryptocurrenciesService;
-import com.messiaen.cryptotoolbox.feature.data.cryptocurrency.CryptocurrenciesManager;
-import com.messiaen.cryptotoolbox.feature.persistence.ApiCallHistory;
+import com.messiaen.cryptotoolbox.feature.events.cryptocurrencies.CryptocurrenciesUpdatedEvent;
+import com.messiaen.cryptotoolbox.feature.events.error.NetworkErrorEvent;
+import com.messiaen.cryptotoolbox.feature.manager.CoinMarketCapManager;
+import com.messiaen.cryptotoolbox.feature.persistence.entities.ApiCallHistory;
 import com.messiaen.cryptotoolbox.feature.persistence.DatabaseManager;
 import com.messiaen.cryptotoolbox.feature.persistence.dao.ApiCallHistoryDao;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.IOException;
 
 import retrofit2.Response;
 
-public class GetCryptocurrenciesIdMapOnCoinMarketCap extends AsyncTask<Void, Void, Void> {
+public class CryptocurrenciesMapQuery extends Query {
 
     @Override
-    protected Void doInBackground(Void... voids) {
+    public void execute() {
         try {
             Response<CryptocurrenciesIDMapDTO> response =
-                    CoinMarketCap
+                    CoinMarketCapManager
                             .getService(CryptocurrenciesService.class)
                             .getCryptocurrenciesIdMap(CryptoToolsApplication.CMC_API_KEY)
                             .execute();
 
             if (response.isSuccessful()) {
                 if (response.body() == null)
-                    return null;
+                    return;
 
                 ApiCallHistoryDao apiCallHistoryDao = DatabaseManager.getDatabase().apiCallHistoryDao();
                 ApiCallHistory history = apiCallHistoryDao.findById(
-                        CoinMarketCap.MAP_ALL_CRYPTOCURRENCIES);
+                        CoinMarketCapManager.MAP_ALL_CRYPTOCURRENCIES);
 
                 if (history == null) {
                     apiCallHistoryDao.insert(new ApiCallHistory(
-                            CoinMarketCap.MAP_ALL_CRYPTOCURRENCIES,
+                            CoinMarketCapManager.MAP_ALL_CRYPTOCURRENCIES,
                             response.body().getStatus().getTimestamp()));
                 } else {
                     history.setLastCall(response.body().getStatus().getTimestamp());
                     apiCallHistoryDao.update(history);
                 }
 
-                CryptocurrenciesManager.getInstance().onUpdate(response.body().getData(),
-                        CryptocurrenciesManager.MAP);
-
-                return null;
+                EventBus.getDefault().post(new CryptocurrenciesUpdatedEvent(response.body().getData()));
             } else {
                 if (response.errorBody() == null)
-                    return null;
+                    return;
 
-                CryptocurrenciesManager.getInstance().onListCryptocurrenciesFailed(response.code(),
-                        response.errorBody().string(), CryptocurrenciesManager.MAP);
-                return null;
+                EventBus.getDefault().post(new NetworkErrorEvent(response.code(),
+                        response.errorBody().string()));
             }
         } catch (IOException e) {
-            CryptocurrenciesManager.getInstance().onListCryptocurrenciesFailed(0, e.getMessage(),
-                    CryptocurrenciesManager.MAP);
-            return null;
+            EventBus.getDefault().post(new NetworkErrorEvent(0, e.getMessage()));
         }
     }
 }
