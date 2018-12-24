@@ -1,4 +1,4 @@
-package com.messiaen.cryptotoolbox.feature.ui.fragment;
+package com.messiaen.cryptotoolbox.feature.ui.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -14,10 +14,11 @@ import com.messiaen.cryptotoolbox.feature.R;
 import com.messiaen.cryptotoolbox.feature.events.cryptocurrencies.CryptocurrenciesDataChangedEvent;
 import com.messiaen.cryptotoolbox.feature.events.cryptocurrencies.CryptocurrenciesUpdatedEvent;
 import com.messiaen.cryptotoolbox.feature.events.cryptocurrencies.CryptocurrencyClickEvent;
+import com.messiaen.cryptotoolbox.feature.events.cryptocurrencies.InvalidateCryptocurrenciesEvent;
 import com.messiaen.cryptotoolbox.feature.events.error.NetworkErrorEvent;
 import com.messiaen.cryptotoolbox.feature.manager.CryptocurrenciesManager;
 import com.messiaen.cryptotoolbox.feature.persistence.entities.CryptocurrencyHolder;
-import com.messiaen.cryptotoolbox.feature.ui.adapter.CryptocurrenciesRecyclerViewAdapter;
+import com.messiaen.cryptotoolbox.feature.ui.adapters.CryptocurrenciesRecyclerViewAdapter;
 import com.messiaen.cryptotoolbox.feature.utils.Keyboard;
 
 import org.greenrobot.eventbus.EventBus;
@@ -30,9 +31,12 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 public class CryptocurrenciesFragment extends Fragment implements SearchView.OnQueryTextListener {
 
+    private SwipeRefreshLayout swipeRefreshLayout;
     private RecyclerView recyclerView;
     private CryptocurrenciesRecyclerViewAdapter adapter;
 
@@ -65,7 +69,6 @@ public class CryptocurrenciesFragment extends Fragment implements SearchView.OnQ
         super.onStart();
 
         EventBus.getDefault().register(this);
-        //Init and register CryptocurrenciesManager if necessary
         CryptocurrenciesManager.getInstance().setComparator(CryptocurrenciesManager.FAVORITES_FIRST);
         CryptocurrenciesManager.getInstance().requestData();
     }
@@ -73,20 +76,25 @@ public class CryptocurrenciesFragment extends Fragment implements SearchView.OnQ
     private void bind(View view) {
         int columnCount = getResources().getInteger(com.messiaen.cryptotoolbox.R.integer.list_crypto_column_size);
 
-        if (view instanceof RecyclerView) {
-            Context context = view.getContext();
-            recyclerView = (RecyclerView) view;
-            if (columnCount <= 1) {
-                LinearLayoutManager layoutManager = new LinearLayoutManager(context);
-                recyclerView.setLayoutManager(layoutManager);
+        if (view instanceof SwipeRefreshLayout) {
+            swipeRefreshLayout = (SwipeRefreshLayout) view;
+            swipeRefreshLayout.setOnRefreshListener(
+                    () -> EventBus.getDefault().post(new InvalidateCryptocurrenciesEvent()));
+        }
+
+        Context context = view.getContext();
+        recyclerView = view.findViewById(R.id.list);
+        if (columnCount <= 1) {
+            LinearLayoutManager layoutManager = new LinearLayoutManager(context);
+            recyclerView.setLayoutManager(layoutManager);
                 /*DividerItemDecoration dividerItemDecoration =
                         new DividerItemDecoration(recyclerView.getContext(),
                                 layoutManager.getOrientation());
                 recyclerView.addItemDecoration(dividerItemDecoration);*/
-            } else {
-                recyclerView.setLayoutManager(new GridLayoutManager(context, columnCount));
-            }
+        } else {
+            recyclerView.setLayoutManager(new StaggeredGridLayoutManager(columnCount, StaggeredGridLayoutManager.VERTICAL));
         }
+
     }
 
     @Override
@@ -124,14 +132,18 @@ public class CryptocurrenciesFragment extends Fragment implements SearchView.OnQ
         if (adapter != null) {
             adapter.setFilters(adapter.getFilters());
         } else if (recyclerView != null) {
-            adapter = new CryptocurrenciesRecyclerViewAdapter(event.getData());
+            adapter = new CryptocurrenciesRecyclerViewAdapter(getActivity(), event.getData());
             recyclerView.setAdapter(adapter);
         }
+        if (swipeRefreshLayout != null)
+            swipeRefreshLayout.setRefreshing(false);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onNetworkError(@NonNull NetworkErrorEvent event) {
         Toast.makeText(getContext(), event.getMessage(), Toast.LENGTH_SHORT).show();
+        if (swipeRefreshLayout != null)
+            swipeRefreshLayout.setRefreshing(false);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

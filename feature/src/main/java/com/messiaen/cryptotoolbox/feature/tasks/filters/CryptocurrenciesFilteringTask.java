@@ -5,7 +5,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 
 import com.messiaen.cryptotoolbox.feature.persistence.entities.CryptocurrencyHolder;
-import com.messiaen.cryptotoolbox.feature.ui.adapter.CryptocurrenciesRecyclerViewAdapter;
+import com.messiaen.cryptotoolbox.feature.ui.adapters.CryptocurrenciesRecyclerViewAdapter;
 
 import java.util.ArrayList;
 import java.util.Arrays;

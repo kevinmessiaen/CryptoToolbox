@@ -69,8 +69,8 @@ public class CoinMarketCapManager {
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     public void refreshCryptocurrencies(CryptocurrenciesOutdatedEvent event) {
-        Boolean state = requests.get(event.getDataType().toString());
-        if (state != null && !state)
+        Boolean busy = requests.get(event.getDataType().toString());
+        if (busy != null && busy)
             return;
 
         requests.put(event.getDataType().toString(), true);
@@ -83,8 +83,8 @@ public class CoinMarketCapManager {
         if (!event.isOnline())
             return;
 
-        Boolean state = requests.get(MAP_ALL_CRYPTOCURRENCIES);
-        if (state != null && !state)
+        Boolean busy = requests.get(MAP_ALL_CRYPTOCURRENCIES);
+        if (busy != null && busy)
             return;
 
         requests.put(MAP_ALL_CRYPTOCURRENCIES, true);

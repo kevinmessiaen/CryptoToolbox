@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.os.Build;
 import android.util.SparseArray;
 
+import com.messiaen.cryptotoolbox.feature.events.cryptocurrencies.InvalidateCryptocurrenciesEvent;
 import com.messiaen.cryptotoolbox.feature.persistence.entities.CryptocurrencyHolder;
 import com.messiaen.cryptotoolbox.feature.persistence.entities.CryptocurrencyHolderUpdater;
 import com.messiaen.cryptotoolbox.feature.events.cryptocurrencies.CryptocurrenciesDataChangedEvent;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -142,5 +144,15 @@ public class CryptocurrenciesManager {
         synchronized (event.getModified()) {
             DatabaseManager.getDatabase().cryptocurrencyHolderDao().insertAll(event.getModified());
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void invalidateData(@NonNull InvalidateCryptocurrenciesEvent event) {
+        for (CryptocurrencyHolder holder: cryptocurrencies) {
+            holder.setLastTimeInfoRefreshed(null);
+            holder.setLastTimePriceRefreshed(null);
+        }
+
+        EventBus.getDefault().post(new CryptocurrenciesRequestMapEvent(true));
     }
 }

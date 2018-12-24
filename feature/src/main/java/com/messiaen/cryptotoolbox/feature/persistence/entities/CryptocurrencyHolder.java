@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 import androidx.room.ColumnInfo;
 import androidx.room.Embedded;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity
@@ -86,6 +87,9 @@ public class CryptocurrencyHolder implements CryptocurrencyHolderUpdater {
 
     @ColumnInfo(name = "is_favorite")
     private boolean isFavorite = false;
+
+    @Ignore
+    private boolean showMenu = false;
 
     public CryptocurrencyHolder() {
 
@@ -273,6 +277,14 @@ public class CryptocurrencyHolder implements CryptocurrencyHolderUpdater {
 
     public void setIsFavorite(boolean favorite) {
         isFavorite = favorite;
+    }
+
+    public boolean isShowMenu() {
+        return showMenu;
+    }
+
+    public void setShowMenu(boolean showMenu) {
+        this.showMenu = showMenu;
     }
 
     public boolean shouldUpdateMetadata(long delay) {

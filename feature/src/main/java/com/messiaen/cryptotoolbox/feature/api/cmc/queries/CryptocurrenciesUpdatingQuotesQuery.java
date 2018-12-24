@@ -1,12 +1,12 @@
 package com.messiaen.cryptotoolbox.feature.api.cmc.queries;
 
 import com.messiaen.cryptotoolbox.feature.CryptoToolsApplication;
-import com.messiaen.cryptotoolbox.feature.api.cmc.results.CryptocurrenciesMetadataDTO;
+import com.messiaen.cryptotoolbox.feature.api.cmc.results.CryptocurrenciesQuotesDTO;
 import com.messiaen.cryptotoolbox.feature.api.cmc.services.CryptocurrenciesService;
 import com.messiaen.cryptotoolbox.feature.events.cryptocurrencies.CryptocurrenciesUpdatedEvent;
 import com.messiaen.cryptotoolbox.feature.events.error.NetworkErrorEvent;
 import com.messiaen.cryptotoolbox.feature.manager.CoinMarketCapManager;
-import com.messiaen.cryptotoolbox.feature.manager.CryptocurrenciesManager;
+import com.messiaen.cryptotoolbox.feature.utils.Currencies;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -23,10 +23,11 @@ public class CryptocurrenciesUpdatingQuotesQuery extends CryptocurrenciesUpdatin
     @Override
     public void execute() {
         try {
-            Response<CryptocurrenciesMetadataDTO> response =
+            Response<CryptocurrenciesQuotesDTO> response =
                     CoinMarketCapManager
                             .getService(CryptocurrenciesService.class)
-                            .getMetadata(CryptoToolsApplication.CMC_API_KEY, id)
+                            .getQuotes(CryptoToolsApplication.CMC_API_KEY, id,
+                                    Currencies.getDefaultLocal().toString())
                             .execute();
 
             if (response.isSuccessful()) {
