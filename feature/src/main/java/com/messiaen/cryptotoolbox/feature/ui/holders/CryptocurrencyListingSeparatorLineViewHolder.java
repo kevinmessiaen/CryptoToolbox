@@ -2,15 +2,14 @@ package com.messiaen.cryptotoolbox.feature.ui.holders;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.view.DragAndDropPermissions;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.messiaen.cryptotoolbox.feature.R;
-import com.messiaen.cryptotoolbox.feature.persistence.entities.CryptocurrencyHolder;
+import com.messiaen.cryptotoolbox.feature.data.models.Coin;
 
-public class CryptocurrencyListingSeparatorLineViewHolder extends ViewHolder<CryptocurrencyHolder> {
+public class CryptocurrencyListingSeparatorLineViewHolder extends ViewHolder<Coin> {
 
     private static Drawable favoriteDrawable;
     private static Drawable moneyDrawable;
@@ -21,15 +20,16 @@ public class CryptocurrencyListingSeparatorLineViewHolder extends ViewHolder<Cry
     private ImageView separatorImageView;
     private TextView separatorTextView;
 
-    public CryptocurrencyListingSeparatorLineViewHolder(Context context, View view) {
+    CryptocurrencyListingSeparatorLineViewHolder(Context context, View view) {
         super(context, view);
     }
 
     @Override
-    protected void bind() {
+    protected void onBind() {
         if (favoriteDrawable == null) {
-            favoriteDrawable = context.getResources().getDrawable(R.drawable.ic_favorite_black_32dp);
+            favoriteDrawable = context.getResources().getDrawable(R.drawable.ic_favorite_secondary_24dp);
             moneyDrawable = context.getResources().getDrawable(R.drawable.ic_attach_money_black_24dp);
+
 
             favoriteString = context.getString(com.messiaen.cryptotoolbox.R.string.cryptocurrencies_favorites);
             allString = context.getString(com.messiaen.cryptotoolbox.R.string.cryptocurrencies_all);
@@ -40,13 +40,23 @@ public class CryptocurrencyListingSeparatorLineViewHolder extends ViewHolder<Cry
     }
 
     @Override
-    public void setData(CryptocurrencyHolder item, CryptocurrencyHolder before,
-                        CryptocurrencyHolder after) {
+    public void onDataChanged(Coin item, Coin before,
+                              Coin after) {
 
-        separatorImageView.setImageDrawable(item.getIsFavorite() ? favoriteDrawable : moneyDrawable);
-        separatorTextView.setText(item.getIsFavorite() ? favoriteString : allString);
+        separatorImageView.setImageDrawable(item.isFavorite() ? favoriteDrawable : moneyDrawable);
+        separatorTextView.setText(item.isFavorite() ? favoriteString : allString);
         view.setVisibility(
-                (before == null || before.getIsFavorite() != item.getIsFavorite())
+                (before == null || before.isFavorite() != item.isFavorite())
                         ? View.VISIBLE : View.GONE);
+    }
+
+    @Override
+    public void onAttach() {
+
+    }
+
+    @Override
+    public void onDetach() {
+
     }
 }

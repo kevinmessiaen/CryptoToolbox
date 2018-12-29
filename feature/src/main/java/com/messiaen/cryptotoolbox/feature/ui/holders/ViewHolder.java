@@ -14,15 +14,19 @@ public abstract class ViewHolder<I> extends RecyclerView.ViewHolder {
         super(view);
         this.context = context;
         this.view = view;
-        bind();
+        onBind();
     }
 
-    protected abstract void bind();
+    public abstract void onAttach();
 
-    public final void setData(I item) {
-        setData(item, null, null);
+    protected abstract void onBind();
+
+    public abstract void onDetach();
+
+    public final void onDataChanged(I item) {
+        onDataChanged(item, null, null);
     }
 
-    public abstract void setData(I item, I before, I after);
+    public abstract void onDataChanged(I item, I before, I after);
 
 }

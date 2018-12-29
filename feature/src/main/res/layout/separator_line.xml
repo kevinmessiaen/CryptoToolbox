@@ -17,8 +17,8 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/separator_image"
-        android:src="@drawable/ic_favorite_black_32dp"
-        android:tint="@color/colorAccent" />
+        app:srcCompat="@drawable/ic_favorite_secondary_24dp"
+        android:tint="@color/colorSecondaryVariant"/>
 
     <TextView
         android:id="@+id/separator_text"
@@ -28,7 +28,7 @@
         app:layout_constraintStart_toEndOf="@id/separator_image"
         android:layout_marginStart="16dp"
         android:layout_marginLeft="16dp"
-        android:textAppearance="@style/AppTheme.TextAppearance.Caption"
+        android:textAppearance="@style/AppTheme.TextAppearance.Caption.Secondary"
         tools:text="FAVORITES"
         android:textAllCaps="true"/>
 
@@ -41,14 +41,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginStart="16dp"
         android:layout_marginLeft="16dp"
-        android:background="@android:color/darker_gray" />
+        android:background="@drawable/gradient_secondary_dark_to_light" />
 
-    <!--
-
-
-
-
-
-</LinearLayout>
--->
 </androidx.constraintlayout.widget.ConstraintLayout>

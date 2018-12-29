@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <include
+        android:id="@+id/cryptocurrencies_section_header"
+        layout="@layout/separator_line"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <include
+        android:id="@+id/cryptocurrencies_section_action"
+        layout="@layout/coin_listing_actions"
+        app:layout_constraintTop_toBottomOf="@id/cryptocurrencies_section_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <include
+        android:id="@+id/cryptocurrencies_section_body"
+        layout="@layout/coin_listing_price_body"
+        app:layout_constraintTop_toBottomOf="@id/cryptocurrencies_section_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

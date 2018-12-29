@@ -1,6 +1,3 @@
 <resources>
-    <string name="cmc_sandbox_url" translatable="false">https://sandbox-api.coinmarketcap.com/</string>
-    <string name="cmc_sandbox_api_key" translatable="false">b017e7bc-5d0c-4305-a01b-1f3ee57630c8</string>
-
-    <string name="cmc_pro_url" translatable="false">https://pro-api.coinmarketcap.com/</string>
+    <string name="coingecko_api_url" translatable="false">https://api.coingecko.com/api/v3/</string>
 </resources>
